@@ -29,11 +29,12 @@ def get_user_intent(user_query):
 
     prompt = f"""
     Analyze the user's query and determine the primary intent.
-    The available intents are: 'report_trash', 'report_pothole', 'find_events', 'check_traffic', 'general_question'.
+    The available intents are: 'report_trash', 'report_pothole', 'report_electricity', 'find_events', 'check_traffic', 'general_question'.
     
     Intent definitions:
     - report_trash: User wants to report garbage, litter, or waste management issues
-    - report_pothole: User wants to report potholes, road damage, or road maintenance issues  
+    - report_pothole: User wants to report potholes, road damage, or road maintenance issues
+    - report_electricity: User wants to report electricity, street light, or power infrastructure issues
     - find_events: User wants to find local events, activities, or happenings
     - check_traffic: User wants traffic information, road conditions, or transportation updates
     - general_question: Any other query or general information request
@@ -210,6 +211,79 @@ def execute_pothole_agent_workflow(image_path):
         }
 
 
+def execute_electricity_agent_workflow(image_path):
+    """
+    Executes the complete electricity agent workflow.
+    """
+    try:
+        import electricity_agent
+
+        print("[Electricity Agent] Loading officials data...")
+        officials_data = electricity_agent.configure_and_load_data()
+
+        print("[Electricity Agent] Extracting geolocation from image...")
+        lat, lon = electricity_agent.get_geolocation(image_path)
+
+        if lat and lon:
+            print(f"[Electricity Agent] Geolocation found: {lat}, {lon}")
+            # Get area from coordinates
+            area = electricity_agent.get_area_from_latlon(lat, lon)
+
+            print("[Electricity Agent] Analyzing image with Gemini...")
+            # Get AI analysis
+            analysis_json_str = electricity_agent.get_electricity_analysis_from_gemini(
+                image_path, lat=lat, lon=lon, area=area
+            )
+
+            # Parse analysis and find official
+            try:
+                analysis = json.loads(analysis_json_str)
+                division_name = analysis.get("division_name", area)
+            except json.JSONDecodeError:
+                division_name = area
+
+            print(f"[Electricity Agent] Finding official for division: {division_name}")
+            official_info = electricity_agent.find_official_for_division(
+                officials_data, division_name
+            )
+
+            # Generate email content
+            location_info = {"area": area, "lat": lat, "lon": lon}
+            email_content = electricity_agent.generate_email_content(
+                analysis, location_info
+            )
+
+            return {
+                "success": True,
+                "agent_type": "electricity",
+                "analysis": analysis_json_str,
+                "official_info": official_info,
+                "email_content": email_content,
+                "area": area,
+                "lat": lat,
+                "lon": lon,
+            }
+        else:
+            return {
+                "success": False,
+                "agent_type": "electricity",
+                "error": "Could not retrieve geolocation data from the image.",
+            }
+
+    except ImportError:
+        return {
+            "success": False,
+            "agent_type": "electricity",
+            "error": "Electricity agent module not found. Please ensure electricity_agent.py exists.",
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "agent_type": "electricity",
+            "error": f"Workflow execution failed: {e}",
+        }
+
+
 def handle_general_question(user_query):
     """
     Handles general questions using Gemini for conversational responses.
@@ -222,6 +296,7 @@ def handle_general_question(user_query):
     You can help with:
     - Reporting trash and waste management issues
     - Reporting potholes and road problems
+    - Reporting electricity and street light issues
     - Finding local events and activities (coming soon)
     - Traffic and transportation information (coming soon)
     - General questions about city services
@@ -297,6 +372,15 @@ def process_request(user_query, image_path=None):
                 }
             return execute_pothole_agent_workflow(image_path)
 
+        elif intent == "report_electricity":
+            if not image_path:
+                return {
+                    "success": False,
+                    "error": "Image required for electricity reporting",
+                    "intent": intent,
+                }
+            return execute_electricity_agent_workflow(image_path)
+
         elif intent == "find_events":
             return {
                 "success": False,
@@ -342,6 +426,7 @@ def main():
         print("I can help you with:")
         print("  🗑️  Report trash and waste issues")
         print("  🕳️  Report potholes and road problems")
+        print("  ⚡ Report electricity and street light issues")
         print("  🎉 Find local events and activities")
         print("  🚦 Get traffic and transportation info")
         print("  💬 Answer general city service questions")
@@ -353,11 +438,11 @@ def main():
             print("❌ Please provide a valid query.")
             return
 
-        # Check if image is needed
+            # Check if image is needed
         intent_preview = get_user_intent(user_input)
         image_path = None
 
-        if intent_preview in ["report_trash", "report_pothole"]:
+        if intent_preview in ["report_trash", "report_pothole", "report_electricity"]:
             image_path = input("Please provide the path to the image: ").strip()
             if not os.path.exists(image_path):
                 print(f"❌ File not found: {image_path}")
@@ -374,7 +459,7 @@ def main():
         if result.get("success"):
             agent_type = result.get("agent_type", "unknown")
 
-            if agent_type in ["trash", "pothole"]:
+            if agent_type in ["trash", "pothole", "electricity"]:
                 # Display detailed report for visual analysis
                 try:
                     analysis = json.loads(result["analysis"])
@@ -390,7 +475,7 @@ def main():
                             f"🔍 Situation: {analysis.get('situation_description', 'N/A')}"
                         )
                         print(f"💡 Advice: {analysis.get('actionable_advice', 'N/A')}")
-                    else:  # pothole
+                    elif agent_type == "pothole":
                         if analysis.get("is_pothole_present", False):
                             print(
                                 f"🔢 Pothole Count: {analysis.get('pothole_count', 'N/A')}"
@@ -404,6 +489,20 @@ def main():
                             )
                         else:
                             print("✅ No significant pothole detected in the image.")
+                    else:  # electricity
+                        if analysis.get("issue_present", False):
+                            print(f"⚡ Issue Type: {analysis.get('issue_type', 'N/A')}")
+                            print(f"📊 Severity: {analysis.get('severity', 'N/A')}")
+                            print(
+                                f"🔍 Situation: {analysis.get('situation_description', 'N/A')}"
+                            )
+                            print(
+                                f"💡 Advice: {analysis.get('actionable_advice', 'N/A')}"
+                            )
+                        else:
+                            print(
+                                "✅ No significant electrical issue detected in the image."
+                            )
 
                     # Official contact info
                     print("\n--- 📞 CONTACT INFORMATION ---")

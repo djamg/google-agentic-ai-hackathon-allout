@@ -462,6 +462,7 @@ def home():
                 "POST /analyze": "Analyze text query with optional image",
                 "POST /report/trash": "Report trash issues with image",
                 "POST /report/pothole": "Report pothole issues with image",
+                "POST /report/electricity": "Report electricity/street light issues with image",
                 "GET /report/<id>": "Retrieve specific report from Firestore",
                 "PUT /report/<id>/status": "Update report status in Firestore",
                 "POST /chat": "General conversation endpoint",
@@ -471,6 +472,7 @@ def home():
             "capabilities": [
                 "Trash reporting and analysis",
                 "Pothole detection and reporting",
+                "Electricity and street light issue reporting",
                 "General city service inquiries",
                 "Official contact information lookup",
                 "Cloud image storage and processing",
@@ -769,6 +771,109 @@ def report_pothole():
         pothole_query = f"Report pothole issue: {description}"
         response, status_code = format_api_response(
             result, processing_time, file_info, pothole_query
+        )
+        return jsonify(response), status_code
+
+    except RequestEntityTooLarge:
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "error": "File too large. Maximum size is 16MB",
+                    "timestamp": time.time(),
+                }
+            ),
+            413,
+        )
+    except Exception as e:
+        processing_time = time.time() - start_time
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "error": f"Internal server error: {str(e)}",
+                    "processing_time": f"{processing_time:.2f}s",
+                    "timestamp": time.time(),
+                }
+            ),
+            500,
+        )
+    finally:
+        # Clean up local file
+        cleanup_uploaded_file(file_info)
+
+
+@app.route("/report/electricity", methods=["POST"])
+def report_electricity():
+    """
+    Dedicated endpoint for electricity/street light reporting.
+
+    Expected form data:
+    - image (file): Image of electricity/street light issue
+    - description (str, optional): Additional description
+
+    Returns:
+        JSON response with electricity analysis, official contact info, and image URL
+    """
+    start_time = time.time()
+    file_info = None
+
+    try:
+        # Check if image is provided
+        if "image" not in request.files:
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "error": "Image file is required for electricity reporting",
+                        "timestamp": time.time(),
+                    }
+                ),
+                400,
+            )
+
+        file = request.files["image"]
+        if file.filename == "":
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "error": "No image file selected",
+                        "timestamp": time.time(),
+                    }
+                ),
+                400,
+            )
+
+        # Save uploaded file
+        file_info = save_uploaded_file(file)
+        if not file_info:
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "error": "Invalid file format. Supported: PNG, JPG, JPEG, GIF",
+                        "timestamp": time.time(),
+                    }
+                ),
+                400,
+            )
+
+        # Get optional description
+        description = request.form.get(
+            "description", "User wants to report electricity issue"
+        )
+
+        # Process through orchestrator
+        result = orchestrator.execute_electricity_agent_workflow(
+            file_info["processing_path"]
+        )
+        processing_time = time.time() - start_time
+
+        # Format and return response
+        electricity_query = f"Report electricity issue: {description}"
+        response, status_code = format_api_response(
+            result, processing_time, file_info, electricity_query
         )
         return jsonify(response), status_code
 
@@ -1127,6 +1232,7 @@ if __name__ == "__main__":
         print("  POST /analyze    - General analysis (query + optional image)")
         print("  POST /report/trash   - Trash reporting (image required)")
         print("  POST /report/pothole - Pothole reporting (image required)")
+        print("  POST /report/electricity - Electricity reporting (image required)")
         print("  GET  /report/<id>    - Retrieve specific report from Firestore")
         print("  PUT  /report/<id>/status - Update report status")
         print("  POST /chat       - Text conversation (JSON)")
@@ -1135,6 +1241,9 @@ if __name__ == "__main__":
             "  curl -X POST -F 'query=I want to report trash' -F 'image=@photo.jpg' http://localhost:5500/analyze"
         )
         print("  curl -X POST -F 'image=@trash.jpg' http://localhost:5500/report/trash")
+        print(
+            "  curl -X POST -F 'image=@streetlight.jpg' http://localhost:5500/report/electricity"
+        )
         print(
             "  curl -X POST -H 'Content-Type: application/json' -d '{\"message\":\"Hello\"}' http://localhost:5500/chat"
         )
