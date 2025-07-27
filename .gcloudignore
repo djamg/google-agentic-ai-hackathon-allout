@@ -1,0 +1,56 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Virtual environments (multiple patterns for safety)
+venv/
+venv/*
+./venv/
+*/venv/
+**/venv/
+env/
+ENV/
+
+# OS and editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git and version control
+.git/
+.gitignore
+
+# Test files
+test_*.py
+*_test.py
+*test*.py
+
+# Documentation
+*.md
+docs/
+
+# Development files
+*.bak
+*.tmp
+*.log
+
+# Upload directory
+uploads/
+uploads/*
+
+# Sample images (large files)
+*.jpg
+*.png
+*.gif
+*.jpeg
+
+# Other large directories that shouldn't be deployed
+node_modules/

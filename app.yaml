@@ -31,19 +31,3 @@ resources:
 # Enable Cloud Logging
 beta_settings:
   cloud_sql_instances: []
-
-# Skip files during deployment
-skip_files:
-- ^(.*/)?#.*#$
-- ^(.*/)?.*~$
-- ^(.*/)?.*\.py[co]$
-- ^(.*/)?.*/RCS/.*$
-- ^(.*/)?\..*$
-- ^(.*/)?.*\.bak$
-- ^(.*/)?venv/.*$
-- ^(.*/)?__pycache__/.*$
-- ^(.*/)?test_.*\.py$
-- ^(.*/)?.*_test\.py$
-- ^(.*/)?.*\.md$
-- ^(.*/)?uploads/.*$
-- ^(.*/)?\.git/.*$ 
