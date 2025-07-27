@@ -1,7 +1,7 @@
 import os
 import json
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
 from dotenv import load_dotenv
@@ -441,7 +441,15 @@ def format_api_response(result, processing_time=None, file_info=None, user_query
 @app.route("/", methods=["GET"])
 def home():
     """
-    API home endpoint with service information.
+    Serve the frontend web interface.
+    """
+    return render_template("index.html")
+
+
+@app.route("/api", methods=["GET"])
+def api_info():
+    """
+    API information endpoint.
     """
     storage_info = {
         "images": "google_cloud_storage" if gcs_bucket else "local_temporary",
@@ -459,6 +467,8 @@ def home():
             "version": "1.0.0",
             "description": "AI-powered city services assistant for Bengaluru",
             "endpoints": {
+                "GET /": "Frontend web interface",
+                "GET /api": "API information (this page)",
                 "POST /analyze": "Analyze text query with optional image",
                 "POST /report/trash": "Report trash issues with image",
                 "POST /report/pothole": "Report pothole issues with image",
@@ -467,7 +477,6 @@ def home():
                 "PUT /report/<id>/status": "Update report status in Firestore",
                 "POST /chat": "General conversation endpoint",
                 "GET /health": "Service health check",
-                "GET /": "This information page",
             },
             "capabilities": [
                 "Trash reporting and analysis",
@@ -948,7 +957,7 @@ def chat():
             )
 
         # Process through orchestrator (text-only)
-        result = orchestrator.handle_general_question(message)
+        result = orchestrator.process_request(message)
         processing_time = time.time() - start_time
 
         # Format and return response
@@ -1227,7 +1236,8 @@ if __name__ == "__main__":
         print("=" * 60)
         print("📍 Server starting on http://localhost:5500")
         print("\n🔗 Available Endpoints:")
-        print("  GET  /           - API documentation")
+        print("  GET  /           - Frontend Web Interface 🌐")
+        print("  GET  /api        - API documentation")
         print("  GET  /health     - Health check")
         print("  POST /analyze    - General analysis (query + optional image)")
         print("  POST /report/trash   - Trash reporting (image required)")
@@ -1236,7 +1246,11 @@ if __name__ == "__main__":
         print("  GET  /report/<id>    - Retrieve specific report from Firestore")
         print("  PUT  /report/<id>/status - Update report status")
         print("  POST /chat       - Text conversation (JSON)")
-        print("\n💡 Examples:")
+        print("\n💡 How to Use:")
+        print("  🌐 Web Interface: Open http://localhost:5500 in your browser")
+        print("  📱 Modern chat interface with drag & drop image upload")
+        print("  ⚡ Quick action buttons for common reports")
+        print("\n💻 API Examples:")
         print(
             "  curl -X POST -F 'query=I want to report trash' -F 'image=@photo.jpg' http://localhost:5500/analyze"
         )

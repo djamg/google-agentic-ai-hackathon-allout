@@ -1,8 +1,11 @@
 import os
 import json
 import time
-from google import genai
+import google.genai as genai
 from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 
 # --- 1. CONFIGURATION AND INITIALIZATION ---
@@ -35,13 +38,23 @@ def get_user_intent(user_query):
     - report_trash: User wants to report garbage, litter, or waste management issues
     - report_pothole: User wants to report potholes, road damage, or road maintenance issues
     - report_electricity: User wants to report electricity, street light, or power infrastructure issues
-    - find_events: User wants to find local events, activities, or happenings
+    - find_events: User wants to find local events, activities, or happenings in Bengaluru. Keywords: events, shows, concerts, meetups, activities, workshops, seminars, conferences, exhibitions, cultural events, tech events, startup events, music events, dance events, gaming events, happenings, what's happening, things to do
     - check_traffic: User wants traffic information, road conditions, or transportation updates
     - general_question: Any other query or general information request
     
+    Examples for find_events:
+    - "Show me upcoming events"
+    - "What events are happening this week?"
+    - "Find tech events"
+    - "Any concerts in Bengaluru?"
+    - "Show me meetups"
+    - "What's happening this weekend?"
+    - "Cultural events near me"
+    - "Things to do in Bengaluru"
+    
     User Query: "{user_query}"
     
-    Return only the single intent name. For example: report_trash
+    Return only the single intent name. For example: find_events
     """
 
     try:
@@ -284,6 +297,41 @@ def execute_electricity_agent_workflow(image_path):
         }
 
 
+def execute_events_agent_workflow(user_query):
+    """
+    Executes the complete events agent workflow.
+    """
+    try:
+        import events_agent
+
+        print("[Events Agent] Loading events data...")
+        events_data = events_agent.configure_and_load_data()
+
+        print(f"[Events Agent] Searching events for query: {user_query}")
+        # Search for events based on user query
+        search_results = events_agent.search_events(events_data, user_query)
+
+        print(f"[Events Agent] Found {search_results.get('total_count', 0)} events")
+
+        # Generate formatted response
+        response = events_agent.generate_events_response(search_results, user_query)
+
+        return response
+
+    except ImportError:
+        return {
+            "success": False,
+            "agent_type": "events",
+            "error": "Events agent module not found. Please ensure events_agent.py exists.",
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "agent_type": "events",
+            "error": f"Workflow execution failed: {e}",
+        }
+
+
 def handle_general_question(user_query):
     """
     Handles general questions using Gemini for conversational responses.
@@ -292,19 +340,31 @@ def handle_general_question(user_query):
     client = genai.Client()
 
     prompt = f"""
-    You are Namma City Buddy, a helpful AI assistant for Bengaluru citizens.
+    You are Bangalore Buzz, a friendly and helpful AI assistant for Bengaluru citizens.
+    
+    Your personality:
+    - Warm, conversational, and approachable
+    - Knowledgeable about Bengaluru/Bangalore
+    - Helpful and solution-oriented
+    - Use a mix of English and occasional local terms when appropriate
+    
     You can help with:
-    - Reporting trash and waste management issues
-    - Reporting potholes and road problems
-    - Reporting electricity and street light issues
-    - Finding local events and activities (coming soon)
-    - Traffic and transportation information (coming soon)
-    - General questions about city services
+    - 🗑️ Reporting trash and waste management issues
+    - 🕳️ Reporting potholes and road problems  
+    - ⚡ Reporting electricity and street light issues
+    - 💬 General questions about city services
+    - 🏙️ Information about Bengaluru
     
-    User asked: "{user_query}"
+    User said: "{user_query}"
     
-    Provide a helpful, friendly response. If the question relates to city services you can handle, 
-    guide them on how to use your specific features. Keep responses concise and actionable.
+    Instructions:
+    - Respond naturally and conversationally
+    - If it's a greeting, be warm and welcoming
+    - If they ask about services, explain what you can do
+    - If they want to report issues, guide them to upload an image and use the specific report buttons
+    - For general questions, be helpful and informative
+    - Keep responses friendly but concise (2-3 sentences max unless detailed explanation needed)
+    - Don't always start with "Hello there!" - vary your greetings
     """
 
     try:
@@ -382,13 +442,7 @@ def process_request(user_query, image_path=None):
             return execute_electricity_agent_workflow(image_path)
 
         elif intent == "find_events":
-            return {
-                "success": False,
-                "agent_type": "events",
-                "error": "Event Discovery Agent is currently under development",
-                "message": "Coming soon: Local events, cultural activities, and community happenings!",
-                "intent": intent,
-            }
+            return execute_events_agent_workflow(user_query)
 
         elif intent == "check_traffic":
             return {

@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore Buzz - AI Assistant for Bengaluru Citizens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- Leaflet.js for interactive maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏙️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Bangalore Buzz</h1>
+            <p>Your AI-powered assistant for Bengaluru city services</p>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="status-text">System Online</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Chat Section -->
+            <div class="chat-section">
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>🚀 Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn trash" onclick="startReporting('trash')">
+                            <span class="icon">🗑️</span>
+                            Report Trash
+                        </button>
+                        <button class="action-btn pothole" onclick="startReporting('pothole')">
+                            <span class="icon">🕳️</span>
+                            Report Pothole
+                        </button>
+                        <button class="action-btn electricity" onclick="startReporting('electricity')">
+                            <span class="icon">⚡</span>
+                            Electricity Issue
+                        </button>
+                        <button class="action-btn events" onclick="findEvents()">
+                            <span class="icon">🎉</span>
+                            Find Events
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message assistant">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            👋 <strong>Welcome to Bangalore Buzz!</strong> I'm your friendly AI assistant for Bengaluru city services.
+                            <br><br>
+                            <strong>🚀 Quick Start:</strong>
+                            <br>• 💬 <strong>Chat with me</strong> - Ask questions like "What can you help with?" or "How do I report an issue?"
+                            <br>• 📸 <strong>Upload & Report</strong> - Drop an image and click the quick action buttons above
+                            <br><br>
+                            <strong>🛠️ I can help you with:</strong>
+                            <br>🗑️ Trash & waste management issues
+                            <br>🕳️ Potholes & road maintenance problems  
+                            <br>⚡ Street lights & electrical infrastructure issues
+                            <br>🎉 Find local events and activities in Bengaluru
+                            <br>🏙️ General questions about Bengaluru services
+                            <br><br>
+                            💬 <strong>Try these conversation starters:</strong>
+                            <br><br>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                                <button onclick="sendSuggestion('Hello! What can you help me with?')" style="background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer;">👋 Say Hello</button>
+                                <button onclick="sendSuggestion('What services are available?')" style="background: #f3e5f5; color: #7b1fa2; border: 1px solid #ce93d8; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer;">🛠️ Services</button>
+                                <button onclick="sendSuggestion('How do I report an issue?')" style="background: #e8f5e8; color: #388e3c; border: 1px solid #a5d6a7; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer;">❓ How to Report</button>
+                                <button onclick="sendSuggestion('Show me tech events')" style="background: #fff3e0; color: #ef6c00; border: 1px solid #ffcc02; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer;">🎉 Find Events</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload Area -->
+                <div class="file-upload-area">
+                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">
+                            Click to upload an image or drag & drop here
+                            <br><small>Supports JPG, PNG, GIF (max 16MB)</small>
+                        </div>
+                    </div>
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    
+                    <div class="file-preview" id="file-preview">
+                        <div class="file-info">
+                            <div class="file-details">
+                                <span class="file-icon">📎</span>
+                                <span id="file-name">image.jpg</span>
+                                <span id="file-size">(2.3 MB)</span>
+                            </div>
+                            <button class="remove-file" onclick="removeFile()">✖️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-container">
+                        <textarea 
+                            id="message-input" 
+                            class="message-input" 
+                            placeholder="Chat with me! Try: 'Hello', 'What can you help with?', or describe an issue..."
+                            rows="1"
+                            onkeypress="handleKeyPress(event)"
+                        ></textarea>
+                        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Report History -->
+                <div class="report-history">
+                    <h3>📋 Recent Reports</h3>
+                    <div id="report-list">
+                        <div class="report-item">
+                            <div class="report-type">No reports yet</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+                                Your submitted reports will appear here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="system-info">
+                    <h3>ℹ️ System Status</h3>
+                    <div class="info-item">
+                        <span>API Status</span>
+                        <span class="info-value" id="api-status">Checking...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Image Storage</span>
+                        <span class="info-value" id="storage-status">Unknown</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Database</span>
+                        <span class="info-value" id="db-status">Unknown</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Reports Stored</span>
+                        <span class="info-value" id="reports-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentFile = null;
+        let reportHistory = [];
+        let isProcessing = false;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            setupFileUpload();
+            loadReportHistory();
+            
+            // Auto-resize textarea
+            const messageInput = document.getElementById('message-input');
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        });
+
+        // Check system status
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                document.getElementById('api-status').textContent = data.status === 'healthy' ? 'Online' : 'Offline';
+                document.getElementById('api-status').className = 'info-value ' + (data.status === 'healthy' ? 'text-success' : 'text-danger');
+                
+                if (data.services) {
+                    document.getElementById('storage-status').textContent = 
+                        data.services.google_cloud_storage === 'enabled' ? 'Cloud' : 'Local';
+                    document.getElementById('db-status').textContent = 
+                        data.services.firestore === 'enabled' ? 'Firestore' : 'None';
+                }
+                
+                document.getElementById('status-text').textContent = 
+                    data.status === 'healthy' ? 'System Online' : 'System Issues';
+                    
+            } catch (error) {
+                console.error('Health check failed:', error);
+                document.getElementById('api-status').textContent = 'Offline';
+                document.getElementById('api-status').className = 'info-value text-danger';
+                document.getElementById('status-text').textContent = 'Connection Error';
+            }
+        }
+
+        // Setup file upload functionality
+        function setupFileUpload() {
+            const uploadZone = document.getElementById('upload-zone');
+            const fileInput = document.getElementById('file-input');
+
+            // Handle drag and drop
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0]);
+                }
+            });
+
+            // Handle file input change
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+        }
+
+        // Handle file selection
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file (JPG, PNG, GIF)');
+                return;
+            }
+
+            if (file.size > 16 * 1024 * 1024) {
+                alert('File size must be less than 16MB');
+                return;
+            }
+
+            currentFile = file;
+            
+            // Update UI
+            document.getElementById('upload-zone').classList.add('has-file');
+            document.getElementById('file-name').textContent = file.name;
+            document.getElementById('file-size').textContent = `(${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+            document.getElementById('file-preview').classList.add('show');
+        }
+
+        // Remove selected file
+        function removeFile() {
+            currentFile = null;
+            document.getElementById('upload-zone').classList.remove('has-file');
+            document.getElementById('file-preview').classList.remove('show');
+            document.getElementById('file-input').value = '';
+        }
+
+        // Handle key press in message input
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Start reporting workflow
+        function startReporting(type) {
+            const messages = {
+                trash: "I want to report a trash issue",
+                pothole: "I want to report a pothole",
+                electricity: "I want to report an electricity issue"
+            };
+            
+            document.getElementById('message-input').value = messages[type];
+            
+            if (!currentFile) {
+                addMessage('assistant', `📸 Please upload an image of the ${type} issue first, then send your message.`);
+                return;
+            }
+            
+            sendMessage();
+        }
+
+        // Send a suggested conversation starter
+        function sendSuggestion(text) {
+            document.getElementById('message-input').value = text;
+            sendMessage();
+        }
+
+        // Find events - quick action for discovering local events
+        function findEvents() {
+            const eventQueries = [
+                "Show me upcoming events in Bengaluru",
+                "What events are happening this week?", 
+                "Find tech events",
+                "Show me cultural events",
+                "Events near Cubbon Park"
+            ];
+            
+            // Pick a random query for variety
+            const randomQuery = eventQueries[Math.floor(Math.random() * eventQueries.length)];
+            document.getElementById('message-input').value = randomQuery;
+            
+            // Add user message and send
+            addMessage('user', randomQuery);
+            sendMessage();
+        }
+
+        // Send message
+        async function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (!message && !currentFile) {
+                return;
+            }
+            
+            if (isProcessing) {
+                return;
+            }
+
+            // Add user message to chat
+            if (message) {
+                addMessage('user', message);
+            }
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Disable send button
+            isProcessing = true;
+            updateSendButton(true);
+            
+            // Show loading message
+            const loadingId = addMessage('assistant', '<div class="loading"><div class="spinner"></div><span style="margin-left: 10px;">Processing your request...</span></div>');
+
+            try {
+                let response;
+                let formData = new FormData();
+                
+                if (currentFile) {
+                    formData.append('image', currentFile);
+                }
+                
+                if (message) {
+                    formData.append('query', message);
+                    formData.append('description', message);
+                }
+
+                // Determine which endpoint to use
+                if (currentFile && message) {
+                    // Check if it's a specific report type
+                    const lowerMessage = message.toLowerCase();
+                    if (lowerMessage.includes('trash') || lowerMessage.includes('garbage') || lowerMessage.includes('waste')) {
+                        response = await fetch('/report/trash', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } else if (lowerMessage.includes('pothole') || lowerMessage.includes('road')) {
+                        response = await fetch('/report/pothole', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } else if (lowerMessage.includes('electricity') || lowerMessage.includes('street light') || lowerMessage.includes('power')) {
+                        response = await fetch('/report/electricity', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } else {
+                        // Use general analyze endpoint
+                        response = await fetch('/analyze', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    }
+                } else if (message) {
+                    // Text-only chat
+                    response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+                }
+
+                const data = await response.json();
+                
+                // Remove loading message
+                removeMessage(loadingId);
+                
+                // Handle response
+                if (data.status === 'success') {
+                    handleSuccessResponse(data);
+                } else {
+                    handleErrorResponse(data);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                removeMessage(loadingId);
+                addMessage('assistant', '❌ Sorry, I encountered an error while processing your request. Please try again.');
+            } finally {
+                // Re-enable send button and clear file
+                isProcessing = false;
+                updateSendButton(false);
+                if (currentFile) {
+                    removeFile();
+                }
+            }
+        }
+
+        // Handle successful API response
+        function handleSuccessResponse(data) {
+            const result = data.data;
+            
+            if (result.agent_type && ['trash', 'pothole', 'electricity'].includes(result.agent_type)) {
+                // This is a report response
+                let responseMessage = `✅ <strong>Report Submitted Successfully!</strong><br><br>`;
+                
+                if (result.analysis) {
+                    try {
+                        const analysis = JSON.parse(result.analysis);
+                        responseMessage += `📍 <strong>Location:</strong> ${result.area || 'Unknown'}<br>`;
+                        
+                        if (result.agent_type === 'trash') {
+                            responseMessage += `🗑️ <strong>Issue Type:</strong> ${analysis.trash_type || 'Waste Management'}<br>`;
+                        } else if (result.agent_type === 'pothole') {
+                            responseMessage += `🕳️ <strong>Issue Type:</strong> Road Maintenance<br>`;
+                        } else if (result.agent_type === 'electricity') {
+                            responseMessage += `⚡ <strong>Issue Type:</strong> ${analysis.issue_type || 'Electrical Infrastructure'}<br>`;
+                        }
+                        
+                        responseMessage += `📊 <strong>Severity:</strong> ${analysis.severity || 'Assessment pending'}<br>`;
+                        responseMessage += `🔍 <strong>Description:</strong> ${analysis.situation_description || 'Issue reported'}<br><br>`;
+                    } catch (e) {
+                        console.warn('Could not parse analysis:', e);
+                    }
+                }
+                
+                if (result.official_info && result.official_info.phone) {
+                    responseMessage += `👮 <strong>Contact Official:</strong><br>`;
+                    responseMessage += `📞 ${result.official_info.phone}<br>`;
+                    if (result.official_info['e-mail']) {
+                        responseMessage += `📧 ${result.official_info['e-mail']}<br>`;
+                    }
+                    responseMessage += `📍 Division: ${result.official_info.area || 'City Services'}<br><br>`;
+                }
+                
+                if (result.email_content) {
+                    responseMessage += `📧 <strong>Email Template Generated:</strong><br><br>`;
+                    responseMessage += `<div class="email-container">`;
+                    responseMessage += `<div class="email-field"><strong>📬 To:</strong> ${result.email_content.to}</div>`;
+                    responseMessage += `<div class="email-field"><strong>📋 Subject:</strong><br><div class="email-subject">"${result.email_content.subject}"</div></div>`;
+                    responseMessage += `<div class="email-field"><strong>📝 Email Body:</strong></div>`;
+                    responseMessage += `<div class="email-body">${result.email_content.body}</div>`;
+                    responseMessage += `</div>`;
+                    responseMessage += `<div class="email-actions">`;
+                    responseMessage += `<button onclick="copyEmailContent('${btoa(JSON.stringify(result.email_content))}')" class="email-action-btn copy" title="Copy email content to clipboard">📋 Copy Email</button>`;
+                    responseMessage += `<button onclick="openEmailClient('${btoa(JSON.stringify(result.email_content))}')" class="email-action-btn send" title="Open in your default email app">📧 Send Email</button>`;
+                    responseMessage += `<button onclick="openGmailCompose('${btoa(JSON.stringify(result.email_content))}')" class="email-action-btn gmail" title="Open Gmail in browser">🔗 Open Gmail</button>`;
+                    responseMessage += `</div>`;
+                    responseMessage += `<div style="margin-top: 10px; font-size: 0.8em; color: var(--text-secondary); text-align: center;">`;
+                    responseMessage += `💡 <strong>Tip:</strong> Use "Copy Email" to paste into any email app, or click "Send Email" to open your default email client.`;
+                    responseMessage += `</div>`;
+                }
+                
+                if (result.firestore_id) {
+                    responseMessage += `🔗 <strong>Report ID:</strong> ${result.firestore_id}<br>`;
+                    responseMessage += `💾 Your report has been saved and can be tracked.`;
+                    
+                    // Add to report history
+                    addToReportHistory({
+                        id: result.firestore_id,
+                        type: result.agent_type,
+                        status: 'submitted',
+                        timestamp: new Date()
+                    });
+                }
+                
+                addMessage('assistant', responseMessage);
+                
+            } else if (result.agent_type === 'events') {
+                // This is an events response
+                handleEventsResponse(result);
+            } else if (result.agent_type === 'general' || result.response) {
+                // This is a chat response
+                addMessage('assistant', result.response || '💬 I received your message! How else can I help you?');
+            } else {
+                // Generic success
+                addMessage('assistant', '✅ Request processed successfully!');
+            }
+        }
+
+        // Handle events response with list view followed by interactive map
+        function handleEventsResponse(result) {
+            let responseMessage = `${result.message}<br><br>`;
+            
+            if (result.events && result.events.length > 0) {
+                const mapId = 'events-map-' + Date.now();
+                
+                // Events list first
+                responseMessage += `<div class="events-list-container">`;
+                responseMessage += `<strong>📅 Upcoming Events</strong><br><br>`;
+                
+                result.events.forEach((event, index) => {
+                    const categoryColors = {
+                        'Tech Meetup': '#3b82f6', 'Startup Networking': '#10b981', 'Gaming Meetup': '#8b5cf6',
+                        'Nature Walk': '#059669', 'Cultural/Music': '#dc2626', 'Wellness/Fitness': '#ea580c',
+                        'Networking': '#0d9488', 'Boardgames Meetup': '#7c3aed', 'Music/Social': '#be123c',
+                        'Dance/Social': '#c2410c', 'Pitch Networking': '#f59e0b'
+                    };
+                    
+                    const bgColor = categoryColors[event.category] || '#6b7280';
+                    
+                    responseMessage += `<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, ${bgColor}15, ${bgColor}05);">`;
+                    responseMessage += `<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">`;
+                    responseMessage += `<div style="flex: 1;">`;
+                    responseMessage += `<div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">${event.event_title}</div>`;
+                    responseMessage += `<div style="font-size: 0.85rem; color: #6b7280;">`;
+                    responseMessage += `📅 ${event.formatted_date || event.date} (${event.day_of_week || 'TBD'}) • ⏰ ${event.time}<br>`;
+                    responseMessage += `📍 ${event.venue}<br>`;
+                    responseMessage += `💰 ${event.price}`;
+                    responseMessage += `</div></div>`;
+                    responseMessage += `<div style="background: ${bgColor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; white-space: nowrap; margin-left: 8px;">${event.category}</div>`;
+                    responseMessage += `</div></div>`;
+                });
+                
+                responseMessage += `</div>`;
+                
+                // Interactive map below the events list
+                if (result.locations && result.locations.length > 0) {
+                    responseMessage += `<div style="margin-top: 20px;">`;
+                    responseMessage += `<strong>🗺️ Event Locations Map</strong><br><br>`;
+                    responseMessage += `<div id="${mapId}" style="width: 100%; height: 300px; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8f9fa;"></div>`;
+                    responseMessage += `</div>`;
+                }
+                
+                // Add category summary
+                if (result.categories && result.categories.length > 0) {
+                    responseMessage += `<div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 0.85rem;">`;
+                    responseMessage += `<strong>🏷️ Categories:</strong> `;
+                    responseMessage += result.categories.slice(0, 5).join(', ');
+                    if (result.categories.length > 5) {
+                        responseMessage += ` +${result.categories.length - 5} more`;
+                    }
+                    responseMessage += `</div>`;
+                }
+                
+                // Add message to DOM first
+                addMessage('assistant', responseMessage);
+                
+                // Initialize Leaflet map after the message is added to DOM (use the same mapId)
+                if (result.locations && result.locations.length > 0) {
+                    setTimeout(() => {
+                        initializeEventsMap(mapId, result.events, result.locations);
+                    }, 200);
+                }
+            } else {
+                // No events found
+                addMessage('assistant', responseMessage);
+            }
+        }
+
+        // Initialize Leaflet.js map with event locations
+        function initializeEventsMap(mapId, events, locations) {
+            try {
+                console.log(`🗺️ Initializing map with ID: ${mapId}`);
+                console.log(`📍 Events: ${events.length}, Locations: ${locations.length}`);
+                
+                const mapElement = document.getElementById(mapId);
+                if (!mapElement) {
+                    console.error(`❌ Map element not found: ${mapId}`);
+                    console.log('Available elements:', document.querySelectorAll('[id*="events-map"]'));
+                    return;
+                }
+                
+                console.log(`✅ Found map element: ${mapElement.id}`);
+
+                // Check if Leaflet is loaded
+                if (typeof L === 'undefined') {
+                    console.error('❌ Leaflet.js library not loaded');
+                    mapElement.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #dc2626; text-align: center;">
+                            <div>
+                                <div style="font-size: 2rem; margin-bottom: 8px;">⚠️</div>
+                                <div>Map library not loaded</div>
+                                <div style="font-size: 0.8rem;">Please refresh the page</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Initialize map centered on Bengaluru
+                const map = L.map(mapId).setView([12.9716, 77.5946], 11);
+
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Define location coordinates for known venues in Bengaluru
+                const venueCoordinates = {
+                    'Cubbon Park': [12.9763, 77.5904],
+                    'Cubbon Park Bengaluru': [12.9763, 77.5904],
+                    'HSR Layout Bengaluru': [12.9082, 77.6479],
+                    'Whitefield Bengaluru': [12.9698, 77.7500],
+                    'Koramangala': [12.9279, 77.6271],
+                    'Indiranagar': [12.9719, 77.6412],
+                    'Jayanagar': [12.9237, 77.5838],
+                    'Meetup Bengaluru': [12.9716, 77.5946], // Generic Bengaluru center
+                    'Bengaluru': [12.9716, 77.5946],
+                    'Meesho Bengaluru': [12.9716, 77.5946],
+                    'christ university, bengaluru': [12.9342, 77.6101],
+                    'Christ University, Bengaluru': [12.9342, 77.6101],
+                    'Bangalore International Centre': [12.9719, 77.6412],
+                    'Bengaluru (Meetup)': [12.9716, 77.5946]
+                };
+
+                // Color scheme for different categories
+                const categoryColors = {
+                    'Tech Meetup': '#3b82f6',
+                    'Startup Networking': '#10b981', 
+                    'Gaming Meetup': '#8b5cf6',
+                    'Nature Walk': '#059669',
+                    'Cultural/Music': '#dc2626',
+                    'Wellness/Fitness': '#ea580c',
+                    'Networking': '#0d9488',
+                    'Boardgames Meetup': '#7c3aed',
+                    'Music/Social': '#be123c',
+                    'Dance/Social': '#c2410c',
+                    'Pitch Networking': '#f59e0b'
+                };
+
+                // Add markers for each event
+                const markers = [];
+                events.forEach((event, index) => {
+                    let coordinates = venueCoordinates[event.venue] || 
+                                   venueCoordinates[event.venue.toLowerCase()] ||
+                                   [12.9716 + (Math.random() - 0.5) * 0.1, 77.5946 + (Math.random() - 0.5) * 0.1]; // Random nearby if not found
+
+                    const color = categoryColors[event.category] || '#6b7280';
+                    
+                    // Create custom icon
+                    const customIcon = L.divIcon({
+                        className: 'custom-event-marker',
+                        html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${index + 1}</div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+
+                    // Add marker with popup
+                    const marker = L.marker(coordinates, { icon: customIcon }).addTo(map);
+                    markers.push(marker);
+                    
+                    // Create popup content
+                    const popupContent = `
+                        <div style="font-size: 0.9rem; line-height: 1.4;">
+                            <strong style="color: ${color};">${event.event_title}</strong><br>
+                            <span style="color: #6b7280;">📅 ${event.formatted_date} ${event.day_of_week}</span><br>
+                            <span style="color: #6b7280;">⏰ ${event.time}</span><br>
+                            <span style="color: #6b7280;">📍 ${event.venue}</span><br>
+                            <span style="color: #6b7280;">💰 ${event.price}</span><br>
+                            <span style="background: ${color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.75rem;">${event.category}</span>
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+                });
+
+                // Fit map to show all markers
+                if (markers.length > 1) {
+                    const group = L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else if (markers.length === 1) {
+                    map.setView(markers[0].getLatLng(), 13);
+                }
+
+                console.log(`✅ Initialized map with ${markers.length} markers`);
+                
+            } catch (error) {
+                console.error('❌ Error initializing map:', error);
+                
+                // Show enhanced fallback message in map container
+                const mapElement = document.getElementById(mapId);
+                if (mapElement) {
+                    mapElement.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6b7280; text-align: center;">
+                            <div>
+                                <div style="font-size: 2rem; margin-bottom: 8px;">🗺️</div>
+                                <div style="font-weight: 600;">Interactive Map Unavailable</div>
+                                <div style="font-size: 0.8rem; margin-top: 4px;">Showing ${locations.length} event locations</div>
+                                <div style="font-size: 0.75rem; margin-top: 8px; color: #9ca3af;">
+                                    ${locations.slice(0, 3).join(' • ')}${locations.length > 3 ? ` • +${locations.length - 3} more` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Handle error response
+        function handleErrorResponse(data) {
+            let errorMessage = '❌ ';
+            
+            if (data.error) {
+                errorMessage += data.error;
+            } else {
+                errorMessage += 'Something went wrong. Please try again.';
+            }
+            
+            if (data.intent) {
+                errorMessage += `<br><small>Intent detected: ${data.intent}</small>`;
+            }
+            
+            addMessage('assistant', errorMessage);
+        }
+
+        // Add message to chat
+        function addMessage(sender, content) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageId = 'msg-' + Date.now();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.id = messageId;
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${sender === 'user' ? 'You' : 'AI'}</div>
+                <div class="message-content">${content}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return messageId;
+        }
+
+        // Remove message from chat
+        function removeMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            if (messageElement) {
+                messageElement.remove();
+            }
+        }
+
+        // Update send button state
+        function updateSendButton(disabled) {
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = disabled;
+            sendBtn.innerHTML = disabled ? '<div class="spinner" style="width: 16px; height: 16px;"></div>' : '➤';
+        }
+
+        // Add to report history
+        function addToReportHistory(report) {
+            reportHistory.unshift(report);
+            updateReportHistoryUI();
+            updateReportsCount();
+        }
+
+        // Update report history UI
+        function updateReportHistoryUI() {
+            const reportList = document.getElementById('report-list');
+            
+            if (reportHistory.length === 0) {
+                reportList.innerHTML = `
+                    <div class="report-item">
+                        <div class="report-type">No reports yet</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+                            Your submitted reports will appear here
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            reportList.innerHTML = reportHistory.slice(0, 5).map(report => `
+                <div class="report-item">
+                    <div class="report-type">${report.type.charAt(0).toUpperCase() + report.type.slice(1)} Report</div>
+                    <div style="margin: 4px 0;">
+                        <span class="report-status ${report.status}">${report.status}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        ${report.timestamp.toLocaleDateString()} ${report.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load report history from localStorage
+        function loadReportHistory() {
+            const saved = localStorage.getItem('namma-city-buddy-reports');
+            if (saved) {
+                try {
+                    reportHistory = JSON.parse(saved).map(report => ({
+                        ...report,
+                        timestamp: new Date(report.timestamp)
+                    }));
+                    updateReportHistoryUI();
+                    updateReportsCount();
+                } catch (e) {
+                    console.warn('Could not load report history:', e);
+                }
+            }
+        }
+
+        // Save report history to localStorage
+        function saveReportHistory() {
+            localStorage.setItem('namma-city-buddy-reports', JSON.stringify(reportHistory));
+        }
+
+        // Update reports count
+        function updateReportsCount() {
+            document.getElementById('reports-count').textContent = reportHistory.length;
+            saveReportHistory();
+        }
+
+        // Email action functions
+        function copyEmailContent(encodedEmailData) {
+            try {
+                const emailData = JSON.parse(atob(encodedEmailData));
+                const emailText = `To: ${emailData.to}\nSubject: ${emailData.subject}\n\n${emailData.body}`;
+                
+                navigator.clipboard.writeText(emailText).then(() => {
+                    showNotification('📋 Email content copied to clipboard!', 'success');
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = emailText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showNotification('📋 Email content copied to clipboard!', 'success');
+                });
+            } catch (error) {
+                console.error('Error copying email content:', error);
+                showNotification('❌ Failed to copy email content', 'error');
+            }
+        }
+
+        function openEmailClient(encodedEmailData) {
+            try {
+                const emailData = JSON.parse(atob(encodedEmailData));
+                const mailtoLink = `mailto:${encodeURIComponent(emailData.to)}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`;
+                
+                // Try to open email client
+                window.location.href = mailtoLink;
+                showNotification('📧 Opening your email client...', 'success');
+            } catch (error) {
+                console.error('Error opening email client:', error);
+                showNotification('❌ Failed to open email client', 'error');
+            }
+        }
+
+        function openGmailCompose(encodedEmailData) {
+            try {
+                const emailData = JSON.parse(atob(encodedEmailData));
+                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailData.to)}&subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`;
+                
+                // Open Gmail in new tab
+                window.open(gmailUrl, '_blank');
+                showNotification('🔗 Opening Gmail in new tab...', 'success');
+            } catch (error) {
+                console.error('Error opening Gmail:', error);
+                showNotification('❌ Failed to open Gmail', 'error');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : '#dc3545'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            // Add animation keyframes if not already added
+            if (!document.getElementById('notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove notification after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Periodically check system status
+        setInterval(checkSystemStatus, 300000); // Every 5 minutes
+    </script>
+</body>
+</html> 
