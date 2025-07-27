@@ -28,34 +28,34 @@
         </div>
 
         <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content" style="display: flex; justify-content: center; height: calc(100vh - 80px);">
             <!-- Chat Section -->
-            <div class="chat-section">
+            <div class="chat-section" style="max-width: 600px; width: 100%; display: flex; flex-direction: column; height: 100%;">
                 <!-- Quick Actions -->
                 <div class="quick-actions">
                     <h3>🚀 Quick Actions</h3>
-                    <div class="action-buttons">
-                        <button class="action-btn trash" onclick="startReporting('trash')">
-                            <span class="icon">🗑️</span>
-                            Report Trash
+                    <div class="action-buttons" style="display: flex; gap: 8px; justify-content: space-between;">
+                        <button class="action-btn trash" onclick="startReporting('trash')" style="flex: 1; padding: 8px 4px; font-size: 0.8rem; min-width: 0;">
+                            <span class="icon" style="display: block; margin-bottom: 2px;">🗑️</span>
+                            Trash
                         </button>
-                        <button class="action-btn pothole" onclick="startReporting('pothole')">
-                            <span class="icon">🕳️</span>
-                            Report Pothole
+                        <button class="action-btn pothole" onclick="startReporting('pothole')" style="flex: 1; padding: 8px 4px; font-size: 0.8rem; min-width: 0;">
+                            <span class="icon" style="display: block; margin-bottom: 2px;">🕳️</span>
+                            Pothole
                         </button>
-                        <button class="action-btn electricity" onclick="startReporting('electricity')">
-                            <span class="icon">⚡</span>
-                            Electricity Issue
+                        <button class="action-btn electricity" onclick="startReporting('electricity')" style="flex: 1; padding: 8px 4px; font-size: 0.8rem; min-width: 0;">
+                            <span class="icon" style="display: block; margin-bottom: 2px;">⚡</span>
+                            Electric
                         </button>
-                        <button class="action-btn events" onclick="findEvents()">
-                            <span class="icon">🎉</span>
-                            Find Events
+                        <button class="action-btn events" onclick="findEvents()" style="flex: 1; padding: 8px 4px; font-size: 0.8rem; min-width: 0;">
+                            <span class="icon" style="display: block; margin-bottom: 2px;">🎉</span>
+                            Events
                         </button>
                     </div>
                 </div>
 
                 <!-- Chat Messages -->
-                <div class="chat-messages" id="chat-messages">
+                <div class="chat-messages" id="chat-messages" style="flex: 1; overflow-y: auto; margin-bottom: 0;">
                     <div class="message assistant">
                         <div class="message-avatar">🤖</div>
                         <div class="message-content">
@@ -84,49 +84,48 @@
                     </div>
                 </div>
 
-                <!-- File Upload Area -->
-                <div class="file-upload-area">
-                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-                        <div class="upload-icon">📸</div>
-                        <div class="upload-text">
-                            Click to upload an image or drag & drop here
-                            <br><small>Supports JPG, PNG, GIF (max 16MB)</small>
-                        </div>
-                    </div>
-                    <input type="file" id="file-input" accept="image/*" style="display: none;">
-                    
-                    <div class="file-preview" id="file-preview">
-                        <div class="file-info">
-                            <div class="file-details">
+                <!-- Bottom Section - Fixed at bottom -->
+                <div style="margin-top: auto; flex-shrink: 0;">
+                    <!-- File Preview -->
+                    <div class="file-preview" id="file-preview" style="margin-bottom: 8px; display: none;">
+                        <div class="file-info" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 8px; display: flex; align-items: center; justify-content: space-between;">
+                            <div class="file-details" style="display: flex; align-items: center; gap: 8px;">
                                 <span class="file-icon">📎</span>
                                 <span id="file-name">image.jpg</span>
-                                <span id="file-size">(2.3 MB)</span>
+                                <span id="file-size" style="color: #6c757d; font-size: 0.85rem;">(2.3 MB)</span>
                             </div>
-                            <button class="remove-file" onclick="removeFile()">✖️</button>
+                            <button class="remove-file" onclick="removeFile()" style="background: none; border: none; cursor: pointer; color: #dc3545; font-size: 1.1rem;">✖️</button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Input Area -->
-                <div class="input-area">
-                    <div class="input-container">
-                        <textarea 
-                            id="message-input" 
-                            class="message-input" 
-                            placeholder="Chat with me! Try: 'Hello', 'What can you help with?', or describe an issue..."
-                            rows="1"
-                            onkeypress="handleKeyPress(event)"
-                        ></textarea>
-                        <button class="send-btn" id="send-btn" onclick="sendMessage()">
-                            ➤
-                        </button>
+                    <!-- Input Area -->
+                    <div class="input-area">
+                        <div class="input-container" style="display: flex; align-items: flex-end; gap: 8px;">
+                            <button class="upload-btn" onclick="document.getElementById('file-input').click()" 
+                                    style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #6c757d; transition: all 0.2s;" 
+                                    title="Upload image">
+                                📸
+                            </button>
+                            <input type="file" id="file-input" accept="image/*" style="display: none;">
+                            <textarea 
+                                id="message-input" 
+                                class="message-input" 
+                                placeholder="Chat with me! Try: 'Hello', 'What can you help with?', or describe an issue..."
+                                rows="1"
+                                onkeypress="handleKeyPress(event)"
+                                style="flex: 1;"
+                            ></textarea>
+                            <button class="send-btn" id="send-btn" onclick="sendMessage()">
+                                ➤
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
+            <!-- Sidebar - COMMENTED OUT -->
+            <!-- 
             <div class="sidebar">
-                <!-- Report History -->
                 <div class="report-history">
                     <h3>📋 Recent Reports</h3>
                     <div id="report-list">
@@ -139,7 +138,6 @@
                     </div>
                 </div>
 
-                <!-- System Info -->
                 <div class="system-info">
                     <h3>ℹ️ System Status</h3>
                     <div class="info-item">
@@ -160,6 +158,7 @@
                     </div>
                 </div>
             </div>
+            -->
         </div>
     </div>
 
@@ -212,28 +211,7 @@
 
         // Setup file upload functionality
         function setupFileUpload() {
-            const uploadZone = document.getElementById('upload-zone');
             const fileInput = document.getElementById('file-input');
-
-            // Handle drag and drop
-            uploadZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadZone.classList.add('dragover');
-            });
-
-            uploadZone.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-            });
-
-            uploadZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadZone.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFileSelect(files[0]);
-                }
-            });
 
             // Handle file input change
             fileInput.addEventListener('change', function(e) {
@@ -258,17 +236,15 @@
             currentFile = file;
             
             // Update UI
-            document.getElementById('upload-zone').classList.add('has-file');
             document.getElementById('file-name').textContent = file.name;
             document.getElementById('file-size').textContent = `(${(file.size / 1024 / 1024).toFixed(1)} MB)`;
-            document.getElementById('file-preview').classList.add('show');
+            document.getElementById('file-preview').style.display = 'block';
         }
 
         // Remove selected file
         function removeFile() {
             currentFile = null;
-            document.getElementById('upload-zone').classList.remove('has-file');
-            document.getElementById('file-preview').classList.remove('show');
+            document.getElementById('file-preview').style.display = 'none';
             document.getElementById('file-input').value = '';
         }
 
@@ -291,7 +267,7 @@
             document.getElementById('message-input').value = messages[type];
             
             if (!currentFile) {
-                addMessage('assistant', `📸 Please upload an image of the ${type} issue first, then send your message.`);
+                addMessage('assistant', `📸 Please upload an image of the ${type} issue using the camera icon next to the input, then send your message.`);
                 return;
             }
             
@@ -809,7 +785,7 @@
 
         // Load report history from localStorage
         function loadReportHistory() {
-            const saved = localStorage.getItem('namma-city-buddy-reports');
+            const saved = localStorage.getItem('bangalore-buzz-reports');
             if (saved) {
                 try {
                     reportHistory = JSON.parse(saved).map(report => ({
@@ -826,7 +802,7 @@
 
         // Save report history to localStorage
         function saveReportHistory() {
-            localStorage.setItem('namma-city-buddy-reports', JSON.stringify(reportHistory));
+            localStorage.setItem('bangalore-buzz-reports', JSON.stringify(reportHistory));
         }
 
         // Update reports count

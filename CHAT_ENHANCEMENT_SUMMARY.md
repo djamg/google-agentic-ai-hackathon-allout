@@ -17,7 +17,7 @@ Our comprehensive test showed:
 ### **1. Improved AI Personality & Responses**
 
 **Before:**
-- Generic "Namma City Buddy" responses
+- Generic "Bangalore Buzz" responses
 - Repetitive greeting patterns
 - Basic service explanations
 
@@ -34,7 +34,7 @@ Our comprehensive test showed:
 
 **Before:**
 ```
-👋 Welcome to Namma City Buddy! I'm here to help...
+👋 Welcome to Bangalore Buzz! I'm here to help...
 ```
 
 **After:**

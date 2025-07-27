@@ -1,0 +1,49 @@
+runtime: python39
+
+# App Engine Configuration
+instance_class: F2
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+# Environment Variables
+env_variables:
+  FLASK_ENV: production
+  PYTHON_ENV: production
+
+# Handler for static files
+handlers:
+- url: /static
+  static_dir: static
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
+
+# File upload configuration
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
+
+# Enable Cloud Logging
+beta_settings:
+  cloud_sql_instances: []
+
+# Skip files during deployment
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?.*\.bak$
+- ^(.*/)?venv/.*$
+- ^(.*/)?__pycache__/.*$
+- ^(.*/)?test_.*\.py$
+- ^(.*/)?.*_test\.py$
+- ^(.*/)?.*\.md$
+- ^(.*/)?uploads/.*$
+- ^(.*/)?\.git/.*$ 

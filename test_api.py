@@ -177,7 +177,7 @@ def test_error_handling():
 
 def main():
     """Run all tests."""
-    print("🧪 NAMMA CITY BUDDY API TESTING")
+    print("🧪 BANGALORE BUZZ API TESTING")
     print("=" * 40)
     print(f"Testing API at: {API_BASE_URL}")
     print("=" * 40)

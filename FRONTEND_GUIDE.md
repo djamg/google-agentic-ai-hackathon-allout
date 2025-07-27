@@ -1,7 +1,7 @@
-# 🌐 Namma City Buddy - Frontend User Guide
+# 🌐 Bangalore Buzz - Frontend User Guide
 
 ## Overview
-The Namma City Buddy frontend is a modern, responsive web interface that provides an intuitive way for Bengaluru citizens to interact with city services. It combines the power of conversational AI with quick-action buttons for common reporting tasks.
+The Bangalore Buzz frontend is a modern, responsive web interface that provides an intuitive way for Bengaluru citizens to interact with city services. It combines the power of conversational AI with quick-action buttons for common reporting tasks.
 
 ## 🚀 Quick Start
 
@@ -82,7 +82,7 @@ The interface is fully optimized for mobile devices:
 ## 🎨 Interface Elements
 
 ### **Header Section**
-- **Title**: Namma City Buddy branding
+- **Title**: Bangalore Buzz branding
 - **Status Indicator**: Live system status with pulsing dot
 - **Description**: Brief service explanation
 
@@ -249,6 +249,6 @@ Enable browser developer tools:
 
 ---
 
-## 🎊 **You now have a complete, modern web interface for Namma City Buddy!**
+## 🎊 **You now have a complete, modern web interface for Bangalore Buzz!**
 
 The frontend provides an intuitive, chat-based experience that makes city service reporting as easy as sending a message. Users can drag and drop images, click quick action buttons, and have natural conversations with the AI assistant - all in a beautiful, responsive interface! 🚀 

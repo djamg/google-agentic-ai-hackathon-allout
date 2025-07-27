@@ -471,12 +471,12 @@ def main():
     Command line interface for the orchestrator.
     """
     try:
-        print("🏙️ Welcome to Namma City Buddy Orchestrator!")
+        print("🏙️ Welcome to Bangalore Buzz Orchestrator!")
         print("Initializing system...")
         configure_and_load_env()
 
         print("\n" + "=" * 60)
-        print("🤖 Hello! I'm your Namma City Buddy AI Assistant.")
+        print("🤖 Hello! I'm your Bangalore Buzz AI Assistant.")
         print("I can help you with:")
         print("  🗑️  Report trash and waste issues")
         print("  🕳️  Report potholes and road problems")
@@ -507,7 +507,7 @@ def main():
 
         # Display results
         print("\n" + "=" * 50)
-        print("🌟 NAMMA CITY BUDDY RESULT 🌟")
+        print("🌟 BANGALORE BUZZ RESULT 🌟")
         print("=" * 50)
 
         if result.get("success"):
@@ -596,11 +596,11 @@ def main():
                 print(f"💡 {result.get('message')}")
 
         print("=" * 50)
-        print("\n✨ Thank you for using Namma City Buddy!")
+        print("\n✨ Thank you for using Bangalore Buzz!")
         print("Together, we're making Bengaluru better! 🏙️")
 
     except KeyboardInterrupt:
-        print("\n\n👋 Goodbye! Thanks for using Namma City Buddy!")
+        print("\n\n👋 Goodbye! Thanks for using Bangalore Buzz!")
     except Exception as e:
         print(f"\n❌ System error: {e}")
         print("Please try again or contact support.")

@@ -154,7 +154,7 @@ The email display enhancement transforms the reporting experience from a basic c
 4. **📱 Use seamlessly** on any device
 5. **✅ Get feedback** with visual confirmations
 
-This enhancement makes Namma City Buddy a **production-ready citizen service platform** with professional-grade email handling capabilities! 🌟
+This enhancement makes Bangalore Buzz a **production-ready citizen service platform** with professional-grade email handling capabilities! 🌟
 
 ---
 

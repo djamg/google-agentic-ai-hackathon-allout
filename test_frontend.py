@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for the Namma City Buddy frontend interface.
+Test script for the Bangalore Buzz frontend interface.
 This script starts the server temporarily and tests if the frontend loads correctly.
 """
 
@@ -13,7 +13,7 @@ from threading import Thread
 
 def test_frontend():
     """Test the frontend interface"""
-    print("🧪 TESTING NAMMA CITY BUDDY FRONTEND")
+    print("🧪 TESTING BANGALORE BUZZ FRONTEND")
     print("=" * 50)
 
     try:
@@ -26,7 +26,7 @@ def test_frontend():
 
             # Check for key elements
             content = response.text
-            if "Namma City Buddy" in content:
+            if "Bangalore Buzz" in content:
                 print("   ✅ Title found in HTML")
             if "chat-messages" in content:
                 print("   ✅ Chat interface elements found")

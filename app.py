@@ -463,7 +463,7 @@ def api_info():
 
     return jsonify(
         {
-            "service": "Namma City Buddy API",
+            "service": "Bangalore Buzz API",
             "version": "1.0.0",
             "description": "AI-powered city services assistant for Bengaluru",
             "endpoints": {
@@ -1199,7 +1199,7 @@ def initialize_app():
     Initialize the application on startup.
     """
     try:
-        print("🏙️ Starting Namma City Buddy API Server...")
+        print("🏙️ Starting Bangalore Buzz API Server...")
         print("Initializing orchestrator...")
         orchestrator.configure_and_load_env()
         print("✅ Orchestrator initialized successfully!")
@@ -1231,39 +1231,53 @@ def initialize_app():
 
 if __name__ == "__main__":
     if initialize_app():
-        print("\n" + "=" * 60)
-        print("🚀 NAMMA CITY BUDDY API SERVER")
-        print("=" * 60)
-        print("📍 Server starting on http://localhost:5500")
-        print("\n🔗 Available Endpoints:")
-        print("  GET  /           - Frontend Web Interface 🌐")
-        print("  GET  /api        - API documentation")
-        print("  GET  /health     - Health check")
-        print("  POST /analyze    - General analysis (query + optional image)")
-        print("  POST /report/trash   - Trash reporting (image required)")
-        print("  POST /report/pothole - Pothole reporting (image required)")
-        print("  POST /report/electricity - Electricity reporting (image required)")
-        print("  GET  /report/<id>    - Retrieve specific report from Firestore")
-        print("  PUT  /report/<id>/status - Update report status")
-        print("  POST /chat       - Text conversation (JSON)")
-        print("\n💡 How to Use:")
-        print("  🌐 Web Interface: Open http://localhost:5500 in your browser")
-        print("  📱 Modern chat interface with drag & drop image upload")
-        print("  ⚡ Quick action buttons for common reports")
-        print("\n💻 API Examples:")
-        print(
-            "  curl -X POST -F 'query=I want to report trash' -F 'image=@photo.jpg' http://localhost:5500/analyze"
-        )
-        print("  curl -X POST -F 'image=@trash.jpg' http://localhost:5500/report/trash")
-        print(
-            "  curl -X POST -F 'image=@streetlight.jpg' http://localhost:5500/report/electricity"
-        )
-        print(
-            "  curl -X POST -H 'Content-Type: application/json' -d '{\"message\":\"Hello\"}' http://localhost:5500/chat"
-        )
-        print("=" * 60)
+        # Check if running in production
+        flask_env = os.getenv("FLASK_ENV", "development")
+        port = int(os.getenv("PORT", 5500))
 
-        app.run(debug=True, host="0.0.0.0", port=5500)
+        if flask_env == "production":
+            print("\n" + "=" * 60)
+            print("🚀 BANGALORE BUZZ - PRODUCTION MODE")
+            print("=" * 60)
+            print(f"📍 Server starting on port {port}")
+            print("🌐 Production deployment ready")
+            print("=" * 60)
+            app.run(debug=False, host="0.0.0.0", port=port)
+        else:
+            print("\n" + "=" * 60)
+            print("🚀 BANGALORE BUZZ API SERVER")
+            print("=" * 60)
+            print("📍 Server starting on http://localhost:5500")
+            print("\n🔗 Available Endpoints:")
+            print("  GET  /           - Frontend Web Interface 🌐")
+            print("  GET  /api        - API documentation")
+            print("  GET  /health     - Health check")
+            print("  POST /analyze    - General analysis (query + optional image)")
+            print("  POST /report/trash   - Trash reporting (image required)")
+            print("  POST /report/pothole - Pothole reporting (image required)")
+            print("  POST /report/electricity - Electricity reporting (image required)")
+            print("  GET  /report/<id>    - Retrieve specific report from Firestore")
+            print("  PUT  /report/<id>/status - Update report status")
+            print("  POST /chat       - Text conversation (JSON)")
+            print("\n💡 How to Use:")
+            print("  🌐 Web Interface: Open http://localhost:5500 in your browser")
+            print("  📱 Modern chat interface with drag & drop image upload")
+            print("  ⚡ Quick action buttons for common reports")
+            print("\n💻 API Examples:")
+            print(
+                "  curl -X POST -F 'query=I want to report trash' -F 'image=@photo.jpg' http://localhost:5500/analyze"
+            )
+            print(
+                "  curl -X POST -F 'image=@trash.jpg' http://localhost:5500/report/trash"
+            )
+            print(
+                "  curl -X POST -F 'image=@streetlight.jpg' http://localhost:5500/report/electricity"
+            )
+            print(
+                "  curl -X POST -H 'Content-Type: application/json' -d '{\"message\":\"Hello\"}' http://localhost:5500/chat"
+            )
+            print("=" * 60)
+            app.run(debug=True, host="0.0.0.0", port=port)
     else:
         print("❌ Application initialization failed. Exiting.")
         exit(1)

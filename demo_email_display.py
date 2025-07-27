@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Demo script showing the enhanced email display feature in Namma City Buddy.
+Demo script showing the enhanced email display feature in Bangalore Buzz.
 This script demonstrates what users will see when they submit a report.
 """
 
@@ -10,7 +10,7 @@ import json
 def demo_email_display():
     """Demonstrate the email display feature with sample data"""
 
-    print("🎬 NAMMA CITY BUDDY - EMAIL DISPLAY DEMO")
+    print("🎬 BANGALORE BUZZ - EMAIL DISPLAY DEMO")
     print("=" * 50)
     print()
 
@@ -64,7 +64,7 @@ Best regards,
 A Concerned Citizen
 
 ---
-This report was generated through Namma City Buddy AI Assistant.
+This report was generated through Bangalore Buzz AI Assistant.
 For technical support, contact the system administrator.""",
             },
             "image_url": "https://storage.googleapis.com/bangalorebuzz/citizen-reports/1753570510_a26b4e3c.jpg",

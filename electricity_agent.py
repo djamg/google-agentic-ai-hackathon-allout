@@ -241,7 +241,7 @@ Best regards,
 A Concerned Citizen
 
 ---
-This report was generated through Namma City Buddy AI Assistant.
+This report was generated through Bangalore Buzz AI Assistant.
 For technical support, contact the system administrator."""
     else:
         subject = f"URGENT: {issue_type} Issue - {area} (Severity: {severity})"
@@ -268,7 +268,7 @@ Best regards,
 A Concerned Citizen
 
 ---
-This report was generated through Namma City Buddy AI Assistant.
+This report was generated through Bangalore Buzz AI Assistant.
 For technical support, contact the system administrator."""
 
     return {"subject": subject, "body": body, "to": "info@bescom.co.in"}
