@@ -7,6 +7,12 @@
 
 **Bangalore Buzz** is an intelligent AI-powered civic assistance platform that helps Bengaluru citizens report city issues, discover local events, and interact with government services through natural conversation and image-based reporting.
 
+## 🎬 Demo Video
+
+[![Bangalore Buzz Demo](https://img.youtube.com/vi/6nHX2nX0nuY/maxresdefault.jpg)](https://youtu.be/6nHX2nX0nuY)
+
+**🎥 Click the image above to watch the full demo!**
+
 ## 🌟 Features
 
 - **🤖 AI-Powered Chat Interface** - Natural language conversation with Gemini AI
